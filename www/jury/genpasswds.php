@@ -56,6 +56,10 @@ echo addForm('genpasswds.php') .
 	" (leave empty for random) " .
 	addSubmit('go', 'doteam') .
 	"</p>\n<p>" .
+	"<p>Dump/restore from: " . addInput('dumpfile', '', 10, 255) . "\n" .
+	addSubmit('dump passwords', 'dodump') . 
+	addSubmit('restore passwords', 'dorestore') . 
+	"</p>" .
 	"Generate a random password for:</p>\n<p>\n" .
 	addSubmit('all teams without a password or IP-address', 'doallnull') .
 	"<br /></p>\n<p>" .
@@ -63,7 +67,36 @@ echo addForm('genpasswds.php') .
 	"<br /></p>\n" .
 	addEndForm();
 
-if ( isset($_POST['forteam']) ) {
+if (isset($_POST['dumpfile'])) {
+	$dumpfile = TMPDIR . "/" . $_POST['dumpfile'] . ".dump";
+}
+if (isset($_POST['dodump'])) {
+	// Dump auth tokens
+	echo "Dumping passwords into " . $dumpfile . "<br/>";
+	$tokens = $DB->q('TABLE SELECT login, authtoken FROM team');
+
+	$out = fopen($dumpfile, 'w');
+	if ($out) {
+		foreach ($tokens as $token) {
+			fwrite($out, $token['login'] . " = " . $token['authtoken'] . "\n");
+		}
+		fclose($out);
+	} else {
+		echo "Failed to open: " . $dumpfile . "<br />\n";
+	}
+} elseif (isset($_POST['dorestore'])) {
+	// Restore auth tokens
+	echo "Restoring passwords from " . $dumpfile . "<br/>";
+
+	if (file_exists($dumpfile)) {
+		$tokens = parse_ini_file($dumpfile);
+		foreach ($tokens as $login => $authtoken) {
+			$DB->q('UPDATE team SET authtoken = %s WHERE login = %s', $authtoken, $login);
+		}
+	} else {
+		echo "No such file: " . $dumpfile . "<br />\n";
+	}
+} elseif ( isset($_POST['forteam']) ) {
 	// output each password once we're done
 	ob_implicit_flush();
 
