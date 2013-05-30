@@ -96,9 +96,10 @@ function putSubmissions($cdata, $restrictions, $limit = 0, $highlight = null)
 	    (isset($restrictions['langid'])    ? 'AND s.langid = %s '    : '%_') .
 	    (isset($restrictions['judgehost']) ? 'AND s.judgehost = %s ' : '%_') ;
 
+	// ADDED: Also get hostname    
 	$res = $DB->q('SELECT s.submitid, s.teamid, s.probid, s.langid,
 					s.submittime, s.judgehost, s.valid, t.name AS teamname,
-					p.name AS probname, l.name AS langname,
+					p.name AS probname, t.hostname AS hostname, l.name AS langname,
 					j.result, j.judgehost, j.verified, j.jury_member, j.seen '
 				  . $sqlbody
 				  . (isset($restrictions['verified'])  ? 'AND ' . $verifyclause : '')
@@ -121,11 +122,13 @@ function putSubmissions($cdata, $restrictions, $limit = 0, $highlight = null)
 
 	// print the table with the submissions.
 	// table header
+	// ADDED: display hostname
 	echo "<table class=\"list sortable\">\n<thead>\n<tr>" .
 
 		(IS_JURY ? "<th scope=\"col\" class=\"sorttable_numeric\">ID</th>" : '') .
 		"<th scope=\"col\">time</th>" .
 		(IS_JURY ? "<th scope=\"col\">team</th>" : '') .
+		(IS_JURY ? "<th scope=\"col\">host</th>" : '') .
 		"<th scope=\"col\">problem</th>" .
 		"<th scope=\"col\">lang</th>" .
 		"<th scope=\"col\">result</th>" .
@@ -176,6 +179,11 @@ function putSubmissions($cdata, $restrictions, $limit = 0, $highlight = null)
 			echo '<td title="' .
 				htmlspecialchars($row['teamid'].': '.$row['teamname']) . '">' .
 				"<a$link>" . htmlspecialchars(str_cut($row['teamname'],30)) . '</a></td>';
+
+			// ADDED: display hostname
+			echo '<td title="' .
+				htmlspecialchars($row['hostname']) . '">' .
+				"<a$link>" . htmlspecialchars(str_cut($row['hostname'],30)) . '</a></td>';
 		}
 		echo '<td class="probid" title="' . htmlspecialchars($row['probname']) . '">' .
 			"<a$link>" . htmlspecialchars($row['probid']) . '</a></td>';
