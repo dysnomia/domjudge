@@ -63,7 +63,7 @@ echo addForm('genpasswds.php') .
 	"Generate a random password for:</p>\n<p>\n" .
 	addSubmit('all teams without a password or IP-address', 'doallnull') .
 	"<br /></p>\n<p>" .
-	addSubmit('absolutely all teams', 'doall') .
+	addSubmit('absolutely all teams', 'doall', null, false) .
 	"<br /></p>\n" .
 	addEndForm();
 
